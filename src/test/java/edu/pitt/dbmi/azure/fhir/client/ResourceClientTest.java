@@ -50,13 +50,15 @@ public class ResourceClientTest {
         PatientResourceClient patientClient = new PatientResourceClient(client);
         EncounterResourceClient encounterClient = new EncounterResourceClient(client);
         SyntheaResourceClient syntheaClient = new SyntheaResourceClient(client);
+        BrainAiResourceClient brainAiClient = new BrainAiResourceClient(client);
         try {
+//            addBrainAiResources(brainAiClient);
+
 //            deleteSyntheaData(syntheaClient);
 //            fetchPatientById(patientClient);
 //            deletePatients(patientClient);
 //            deleteEncounters(encounterClient);
 //            loadSyntheaData(syntheaClient);
-
 //            uploadSyntheaEncountersFromFile(encounterClient);
 //            uploadSyntheaPatientsFromFile(patientClient);
 //            deleteEncounters(encounterClient);
@@ -66,6 +68,18 @@ public class ResourceClientTest {
         } catch (Exception exception) {
             exception.printStackTrace(System.err);
         }
+    }
+
+    private void addBrainAiResources(BrainAiResourceClient brainAiClient) throws IOException {
+        System.out.println("--------------------------------------------------------------------------------");
+        System.out.println("Brain AI Synthea");
+        System.out.println("--------------------------------------------------------------------------------");
+
+        Path resourceDirectory = Paths.get(ResourceClientTest.class.getResource("/data/brainai").getFile());
+        brainAiClient.addResources(resourceDirectory);
+
+        System.out.println();
+        System.out.println();
     }
 
     private void deleteSyntheaData(SyntheaResourceClient syntheaClient) throws IOException {
