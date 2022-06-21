@@ -46,15 +46,13 @@ import org.hl7.fhir.r4.model.Resource;
  */
 public class SyntheaResourceClient extends AbstractResourceClient {
 
-    private final IGenericClient client;
-
     public SyntheaResourceClient(IGenericClient client) {
-        this.client = client;
+        super(client);
     }
 
     public void deleteAllResourceBundle(Path bundleFile) throws IOException {
         Map<Class, Resource> resourceClasses = new HashMap<>();
-        try ( BufferedReader reader = Files.newBufferedReader(bundleFile, Charset.defaultCharset())) {
+        try (BufferedReader reader = Files.newBufferedReader(bundleFile, Charset.defaultCharset())) {
             Bundle bundle = (Bundle) JsonResourceConverterR4.parseResource(reader);
             bundle.getEntry().forEach(e -> resourceClasses.put(e.getResource().getClass(), e.getResource()));
         }
@@ -68,13 +66,13 @@ public class SyntheaResourceClient extends AbstractResourceClient {
                             .cacheControl(new CacheControlDirective().setNoCache(true))
                             .execute();
 
-                    deleteResources(searchBundle, client);
+                    deleteResources(searchBundle);
                 });
 
     }
 
     public Bundle addAllResourceBundle(Path bundleFile) throws IOException {
-        try ( BufferedReader reader = Files.newBufferedReader(bundleFile, Charset.defaultCharset())) {
+        try (BufferedReader reader = Files.newBufferedReader(bundleFile, Charset.defaultCharset())) {
             Bundle bundle = (Bundle) JsonResourceConverterR4.parseResource(reader);
 
             return client.transaction().withBundle(bundle).execute();
@@ -87,7 +85,7 @@ public class SyntheaResourceClient extends AbstractResourceClient {
         List<Observation> observations = getObservations(bundleFile);
 
         patients.forEach(patient -> {
-            MethodOutcome patientOutcome = addResource(patient, client);
+            MethodOutcome patientOutcome = addResource(patient);
             final Patient uploadedPatient = (Patient) patientOutcome.getResource();
 
             encounters.stream()
@@ -97,7 +95,7 @@ public class SyntheaResourceClient extends AbstractResourceClient {
                                 .setReference("Patient/" + uploadedPatient.getIdElement().getIdPart())
                                 .setDisplay(uploadedPatient.getNameFirstRep().getNameAsSingleString()));
 
-                        MethodOutcome encounterOutcome = addResource(encounter, client);
+                        MethodOutcome encounterOutcome = addResource(encounter);
                         final Encounter uploadedEncounter = (Encounter) encounterOutcome.getResource();
 
                         final Bundle bundle = new Bundle();
@@ -118,7 +116,7 @@ public class SyntheaResourceClient extends AbstractResourceClient {
                                             .setMethod(Bundle.HTTPVerb.POST);
                                 });
 
-                        Bundle observationBundle = client.transaction().withBundle(bundle).execute();
+                        client.transaction().withBundle(bundle).execute();
                     });
 
         });
@@ -150,7 +148,7 @@ public class SyntheaResourceClient extends AbstractResourceClient {
     public List<Observation> getObservations(Path bundleFile) throws IOException {
         List<Observation> observations = new LinkedList<>();
 
-        try ( BufferedReader reader = Files.newBufferedReader(bundleFile, Charset.defaultCharset())) {
+        try (BufferedReader reader = Files.newBufferedReader(bundleFile, Charset.defaultCharset())) {
             Bundle bundle = (Bundle) JsonResourceConverterR4.parseResource(reader);
             bundle.getEntry().stream()
                     .filter(e -> e.getResource().fhirType().equals("Observation"))
@@ -164,7 +162,7 @@ public class SyntheaResourceClient extends AbstractResourceClient {
     public List<Encounter> getEncounters(Path bundleFile) throws IOException {
         List<Encounter> encounters = new LinkedList<>();
 
-        try ( BufferedReader reader = Files.newBufferedReader(bundleFile, Charset.defaultCharset())) {
+        try (BufferedReader reader = Files.newBufferedReader(bundleFile, Charset.defaultCharset())) {
             Bundle bundle = (Bundle) JsonResourceConverterR4.parseResource(reader);
             bundle.getEntry().stream()
                     .filter(e -> e.getResource().fhirType().equals("Encounter"))
@@ -178,7 +176,7 @@ public class SyntheaResourceClient extends AbstractResourceClient {
     public List<Patient> getPatients(Path bundleFile) throws IOException {
         List<Patient> patients = new LinkedList<>();
 
-        try ( BufferedReader reader = Files.newBufferedReader(bundleFile, Charset.defaultCharset())) {
+        try (BufferedReader reader = Files.newBufferedReader(bundleFile, Charset.defaultCharset())) {
             Bundle bundle = (Bundle) JsonResourceConverterR4.parseResource(reader);
             bundle.getEntry().stream()
                     .filter(e -> e.getResource().fhirType().equals("Patient"))

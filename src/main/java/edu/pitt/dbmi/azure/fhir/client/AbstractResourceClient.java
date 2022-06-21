@@ -32,16 +32,22 @@ import org.hl7.fhir.r4.model.Resource;
  * @author Kevin V. Bui (kvb2univpitt@gmail.com)
  */
 public abstract class AbstractResourceClient {
-    
-    protected MethodOutcome addResource(Resource resource, IGenericClient client) {        
-       return client.create().resource(resource).execute();
+
+    protected final IGenericClient client;
+
+    public AbstractResourceClient(IGenericClient client) {
+        this.client = client;
     }
-    
-    public MethodOutcome deleteResource(Resource resource, IGenericClient client) {        
+
+    protected MethodOutcome addResource(Resource resource) {
+        return client.create().resource(resource).execute();
+    }
+
+    public MethodOutcome deleteResource(Resource resource) {
         return client.delete().resource(resource).execute();
     }
 
-    protected Bundle addResources(List<Resource> resources, String url, IGenericClient client) {
+    protected Bundle addResources(List<Resource> resources, String url) {
         Bundle bundle = new Bundle();
         bundle.setType(Bundle.BundleType.TRANSACTION);
 
@@ -54,7 +60,7 @@ public abstract class AbstractResourceClient {
         return client.transaction().withBundle(bundle).execute();
     }
 
-    protected Bundle deleteResources(Bundle searchBundle, IGenericClient client) {
+    protected Bundle deleteResources(Bundle searchBundle) {
         Bundle deleteBundle = new Bundle();
         deleteBundle.setType(Bundle.BundleType.TRANSACTION);
 

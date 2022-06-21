@@ -32,10 +32,8 @@ import org.hl7.fhir.r4.model.Encounter;
  */
 public class EncounterResourceClient extends AbstractResourceClient {
 
-    private final IGenericClient client;
-
     public EncounterResourceClient(IGenericClient client) {
-        this.client = client;
+        super(client);
     }
 
     public MethodOutcome deleteEncounter(Encounter encounter) {
@@ -43,7 +41,7 @@ public class EncounterResourceClient extends AbstractResourceClient {
     }
 
     public Bundle deleteEncounters() {
-        return deleteResources(getEncounters(), client);
+        return deleteResources(getEncounters());
     }
 
     public Bundle getEncounters() {

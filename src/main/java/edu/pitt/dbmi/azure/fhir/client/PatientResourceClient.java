@@ -35,10 +35,8 @@ import org.hl7.fhir.r4.model.Resource;
  */
 public class PatientResourceClient extends AbstractResourceClient {
 
-    private final IGenericClient client;
-
     public PatientResourceClient(IGenericClient client) {
-        this.client = client;
+        super(client);
     }
 
     public Bundle uploadPatients(List<Patient> patients) {
@@ -46,7 +44,7 @@ public class PatientResourceClient extends AbstractResourceClient {
                 .map(e -> (Resource) e)
                 .collect(Collectors.toList());
 
-        return addResources(resources, "Patient", client);
+        return addResources(resources, "Patient");
     }
 
     public MethodOutcome deletePatient(Patient patient) {
@@ -54,7 +52,7 @@ public class PatientResourceClient extends AbstractResourceClient {
     }
 
     public Bundle deletePatients() {
-        return deleteResources(getPatients(), client);
+        return deleteResources(getPatients());
     }
 
     public Patient getPatient(String id) {
