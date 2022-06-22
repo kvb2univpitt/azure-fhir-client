@@ -120,10 +120,6 @@ public class SyntheaResourceClient extends AbstractResourceClient {
                     });
 
         });
-
-        System.out.printf("Patients: %d%n", patients.size());
-        System.out.printf("Encounters: %d%n", encounters.size());
-        System.out.printf("Observations: %d%n", observations.size());
     }
 
     public Bundle addEncounters(List<Encounter> encounters, Patient patient) {

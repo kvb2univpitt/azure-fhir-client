@@ -43,7 +43,7 @@ public abstract class AbstractResourceClient {
         return client.create().resource(resource).execute();
     }
 
-    public MethodOutcome deleteResource(Resource resource) {
+    protected MethodOutcome deleteResource(Resource resource) {
         return client.delete().resource(resource).execute();
     }
 
