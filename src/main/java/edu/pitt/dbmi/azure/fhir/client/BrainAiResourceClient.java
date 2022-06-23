@@ -24,10 +24,14 @@ import edu.pitt.dbmi.fhir.resource.mapper.r4.brainai.EncounterResourceMapper;
 import edu.pitt.dbmi.fhir.resource.mapper.r4.brainai.ObservationResourceMapper;
 import edu.pitt.dbmi.fhir.resource.mapper.r4.brainai.PatientResourceMapper;
 import edu.pitt.dbmi.fhir.resource.mapper.util.Delimiters;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.text.ParseException;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -51,9 +55,13 @@ public class BrainAiResourceClient extends AbstractResourceClient {
     }
 
     public void addResources(Path resourceDirectory) throws IOException {
-        addPatients(Paths.get(resourceDirectory.toString(), "patients.tsv"));
-        addEncounters(Paths.get(resourceDirectory.toString(), "encounters.tsv"));
-        addObservations(Paths.get(resourceDirectory.toString(), "observations.tsv"));
+//        addPatients(Paths.get(resourceDirectory.toString(), "patients.tsv"));
+//        addEncounters(Paths.get(resourceDirectory.toString(), "encounters.tsv"));
+//        addObservations(Paths.get(resourceDirectory.toString(), "observations.tsv"));
+
+//        addPatients(Paths.get(resourceDirectory.toString(), "patients.tsv"), 500);
+//        addEncounters(Paths.get(resourceDirectory.toString(), "encounters.tsv"), 500);
+//        addObservations(Paths.get(resourceDirectory.toString(), "observations.tsv"), 500);
     }
 
     public Bundle addObservations(Path tsvFile) {
@@ -77,6 +85,121 @@ public class BrainAiResourceClient extends AbstractResourceClient {
                 .collect(Collectors.toList());
 
         return addResources(resources, "Observation");
+    }
+
+    public void addObservations(Path tsvFile, int batchSize) {
+        Map<String, Patient> patientReferences = new HashMap<>();
+        Map<String, Encounter> encounterReferences = new HashMap<>();
+        List<String> batch = new LinkedList<>();
+        try (BufferedReader reader = Files.newBufferedReader(tsvFile, Charset.defaultCharset())) {
+            reader.readLine(); // skip header
+            for (String line = reader.readLine(); line != null; line = reader.readLine()) {
+                if (batch.size() == batchSize) {
+                    addObservation(batch, patientReferences, encounterReferences);
+                    batch.clear();
+                }
+
+                batch.add(line);
+            }
+        } catch (IOException | ParseException exception) {
+            exception.printStackTrace(System.err);
+        }
+
+        try {
+            addObservation(batch, patientReferences, encounterReferences);
+            batch.clear();
+        } catch (ParseException exception) {
+            exception.printStackTrace(System.err);
+        }
+    }
+
+    public void addEncounters(Path tsvFile, int batchSize) {
+        Map<String, Patient> patientReferences = new HashMap<>();
+        List<String> batch = new LinkedList<>();
+        try (BufferedReader reader = Files.newBufferedReader(tsvFile, Charset.defaultCharset())) {
+            reader.readLine(); // skip header
+            for (String line = reader.readLine(); line != null; line = reader.readLine()) {
+                if (batch.size() == batchSize) {
+                    addEncounter(batch, patientReferences);
+                    batch.clear();
+                }
+
+                batch.add(line);
+            }
+        } catch (IOException | ParseException exception) {
+            exception.printStackTrace(System.err);
+        }
+
+        try {
+            addEncounter(batch, patientReferences);
+            batch.clear();
+        } catch (ParseException exception) {
+            exception.printStackTrace(System.err);
+        }
+    }
+
+    private void addObservation(
+            List<String> batch,
+            Map<String, Patient> patientReferences,
+            Map<String, Encounter> encounterReferences) throws ParseException {
+        List<Resource> resources = new LinkedList<>();
+        for (String line : batch) {
+            Observation observation = ObservationResourceMapper.getObservation(Delimiters.TAB_DELIM.split(line));
+
+            Patient patient = patientReferences.get(observation.getSubject().getReference());
+            if (patient == null) {
+                Resource resource = findPatient(observation.getSubject()).getEntryFirstRep().getResource();
+                if (resource != null) {
+                    patient = (Patient) resource;
+                    patientReferences.put(observation.getSubject().getReference(), patient);
+                }
+            }
+            Encounter encounter = encounterReferences.get(observation.getEncounter().getReference());
+            if (encounter == null) {
+                Resource resource = findEncounter(observation.getEncounter()).getEntryFirstRep().getResource();
+                if (resource != null) {
+                    encounter = (Encounter) resource;
+                    encounterReferences.put(observation.getEncounter().getReference(), encounter);
+                }
+            }
+
+            if (!(patient == null || encounter == null)) {
+                observation.setSubject(new Reference()
+                        .setReference("Patient/" + patient.getIdElement().getIdPart())
+                        .setDisplay(patient.getNameFirstRep().getNameAsSingleString()));
+                observation.setEncounter(new Reference()
+                        .setReference("Encounter/" + encounter.getIdElement().getIdPart()));
+            }
+
+            resources.add(observation);
+        }
+
+        addResources(resources, "Observation");
+    }
+
+    private void addEncounter(List<String> batch, Map<String, Patient> patientReferences) throws ParseException {
+        List<Resource> resources = new LinkedList<>();
+        for (String line : batch) {
+            Encounter encounter = EncounterResourceMapper.getEncounter(Delimiters.TAB_DELIM.split(line));
+
+            Patient patient = patientReferences.get(encounter.getSubject().getReference());
+            if (patient == null) {
+                Resource resource = findPatient(encounter.getSubject()).getEntryFirstRep().getResource();
+                if (resource != null) {
+                    patient = (Patient) resource;
+                    patientReferences.put(encounter.getSubject().getReference(), patient);
+                }
+            }
+            if (patient != null) {
+                encounter.setSubject(new Reference()
+                        .setReference("Patient/" + patient.getIdElement().getIdPart())
+                        .setDisplay(patient.getNameFirstRep().getNameAsSingleString()));
+            }
+
+            resources.add(encounter);
+        }
+
+        addResources(resources, "Encounter");
     }
 
     public Bundle addEncounters(Path tsvFile) {
@@ -105,6 +228,39 @@ public class BrainAiResourceClient extends AbstractResourceClient {
                 .map(e -> (Resource) e).collect(Collectors.toList());
 
         return addResources(patients, "Patient");
+    }
+
+    public void addPatients(Path tsvFile, int batchSize) {
+        List<String> batch = new LinkedList<>();
+        try (BufferedReader reader = Files.newBufferedReader(tsvFile, Charset.defaultCharset())) {
+            reader.readLine(); // skip header
+            for (String line = reader.readLine(); line != null; line = reader.readLine()) {
+                if (batch.size() == batchSize) {
+                    addPatients(batch);
+                    batch.clear();
+                }
+
+                batch.add(line);
+            }
+        } catch (IOException | ParseException exception) {
+            exception.printStackTrace(System.err);
+        }
+
+        try {
+            addPatients(batch);
+            batch.clear();
+        } catch (ParseException exception) {
+            exception.printStackTrace(System.err);
+        }
+    }
+
+    private void addPatients(List<String> batch) throws ParseException {
+        List<Resource> resources = new LinkedList<>();
+        for (String line : batch) {
+            resources.add(PatientResourceMapper.getPatient(Delimiters.TAB_DELIM.split(line)));
+        }
+
+        addResources(resources, "Patient");
     }
 
     private Map<String, Encounter> fetchEncountersFromObservations(List<Observation> observations) {

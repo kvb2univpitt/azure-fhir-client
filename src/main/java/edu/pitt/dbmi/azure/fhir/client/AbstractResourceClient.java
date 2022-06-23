@@ -20,6 +20,7 @@ package edu.pitt.dbmi.azure.fhir.client;
 
 import ca.uhn.fhir.rest.api.MethodOutcome;
 import ca.uhn.fhir.rest.client.api.IGenericClient;
+import java.util.LinkedList;
 import java.util.List;
 import org.hl7.fhir.instance.model.api.IBaseBundle;
 import org.hl7.fhir.r4.model.Bundle;
@@ -58,6 +59,46 @@ public abstract class AbstractResourceClient {
                 .setMethod(Bundle.HTTPVerb.POST));
 
         return client.transaction().withBundle(bundle).execute();
+    }
+
+    protected void deleteResources(Bundle searchBundle, int batchSize) {
+        List<Bundle.BundleEntryComponent> entries = new LinkedList<>();
+        searchBundle.getEntry().forEach(entries::add);
+
+        while (searchBundle.getLink(IBaseBundle.LINK_NEXT) != null) {
+            searchBundle = client
+                    .loadPage()
+                    .next(searchBundle)
+                    .execute();
+
+            searchBundle.getEntry()
+                    .forEach(entry -> {
+                        if (entries.size() == batchSize) {
+                            deleteResources(entries);
+                            entries.clear();
+                        }
+
+                        entries.add(entry);
+                    });
+        }
+
+        deleteResources(entries);
+    }
+
+    private void deleteResources(List<Bundle.BundleEntryComponent> entries) {
+        if (entries.isEmpty()) {
+            return;
+        }
+
+        Bundle deleteBundle = new Bundle();
+        deleteBundle.setType(Bundle.BundleType.BATCH);
+
+        entries.forEach(e -> deleteBundle
+                .addEntry()
+                .getRequest().setUrl(e.getFullUrl())
+                .setMethod(Bundle.HTTPVerb.DELETE));
+
+        client.transaction().withBundle(deleteBundle).execute();
     }
 
     protected Bundle deleteResources(Bundle searchBundle) {

@@ -66,7 +66,7 @@ public class SyntheaResourceClient extends AbstractResourceClient {
                             .cacheControl(new CacheControlDirective().setNoCache(true))
                             .execute();
 
-                    deleteResources(searchBundle);
+                    deleteResources(searchBundle, 500);
                 });
 
     }

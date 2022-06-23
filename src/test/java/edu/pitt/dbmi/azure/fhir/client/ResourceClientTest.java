@@ -187,6 +187,8 @@ public class ResourceClientTest {
     }
 
     private IGenericClient getClient() {
+        fhirContext.getRestfulClientFactory().setSocketTimeout(200 * 1000);
+
         IGenericClient client = fhirContext.newRestfulGenericClient(fhirUrl);
         client.registerInterceptor(new BearerTokenAuthInterceptor(accessToken));
 
