@@ -20,10 +20,12 @@ package edu.pitt.dbmi.azure.fhir.client;
 
 import ca.uhn.fhir.rest.api.CacheControlDirective;
 import ca.uhn.fhir.rest.client.api.IGenericClient;
+import edu.pitt.dbmi.fhir.resource.mapper.r4.brainai.DiagnosticReportResourceMapper;
 import edu.pitt.dbmi.fhir.resource.mapper.r4.brainai.EncounterResourceMapper;
 import edu.pitt.dbmi.fhir.resource.mapper.r4.brainai.ObservationResourceMapper;
 import edu.pitt.dbmi.fhir.resource.mapper.r4.brainai.PatientResourceMapper;
 import edu.pitt.dbmi.fhir.resource.mapper.util.Delimiters;
+import edu.pitt.dbmi.fhir.resource.mapper.util.JsonResourceConverterR4;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -36,6 +38,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import org.hl7.fhir.r4.model.Bundle;
+import org.hl7.fhir.r4.model.DiagnosticReport;
 import org.hl7.fhir.r4.model.Encounter;
 import org.hl7.fhir.r4.model.Observation;
 import org.hl7.fhir.r4.model.Patient;
@@ -55,13 +58,81 @@ public class BrainAiResourceClient extends AbstractResourceClient {
     }
 
     public void addResources(Path resourceDirectory) throws IOException {
+        System.out.println("================================================================================");
 //        addPatients(Paths.get(resourceDirectory.toString(), "patients.tsv"));
 //        addEncounters(Paths.get(resourceDirectory.toString(), "encounters.tsv"));
 //        addObservations(Paths.get(resourceDirectory.toString(), "observations.tsv"));
+//        addDiagnosticReports(Paths.get(resourceDirectory.toString(), "diagnostic_report.tsv"));
 
 //        addPatients(Paths.get(resourceDirectory.toString(), "patients.tsv"), 500);
 //        addEncounters(Paths.get(resourceDirectory.toString(), "encounters.tsv"), 500);
 //        addObservations(Paths.get(resourceDirectory.toString(), "observations.tsv"), 500);
+//        addDiagnosticReports(Paths.get(resourceDirectory.toString(), "diagnostic_report.tsv"), 1);
+        System.out.println("================================================================================");
+    }
+
+    public void addDiagnosticReports(Path tsvFile, int batchSize) {
+        List<DiagnosticReport> diagnosticReports = DiagnosticReportResourceMapper.getDiagnosticReports(tsvFile, Delimiters.TAB_DELIM);
+        Map<String, Patient> patientReferences = fetchPatientsFromDiagnosticReports(diagnosticReports);
+        Map<String, Encounter> encounterReferences = fetchEncountersFromDiagnosticReports(diagnosticReports);
+        Map<String, Observation> observationReferences = fetchObservationEncounterFromDiagnosticReports(diagnosticReports);
+
+        List<DiagnosticReport> batchList = new LinkedList<>();
+        diagnosticReports.forEach(diagnosticReport -> {
+            if (batchList.size() == batchSize) {
+                addDiagnosticReports(batchList, patientReferences, encounterReferences, observationReferences);
+                batchList.clear();
+            }
+
+            batchList.add(diagnosticReport);
+        });
+
+        if (!batchList.isEmpty()) {
+            addDiagnosticReports(batchList, patientReferences, encounterReferences, observationReferences);
+            batchList.clear();
+        }
+    }
+
+    public Bundle addDiagnosticReports(Path tsvFile) {
+        List<DiagnosticReport> diagnosticReports = DiagnosticReportResourceMapper.getDiagnosticReports(tsvFile, Delimiters.TAB_DELIM);
+        Map<String, Patient> patientReferences = fetchPatientsFromDiagnosticReports(diagnosticReports);
+        Map<String, Encounter> encounterReferences = fetchEncountersFromDiagnosticReports(diagnosticReports);
+        Map<String, Observation> observationReferences = fetchObservationEncounterFromDiagnosticReports(diagnosticReports);
+
+        return addDiagnosticReports(diagnosticReports, patientReferences, encounterReferences, observationReferences);
+    }
+
+    private Bundle addDiagnosticReports(
+            List<DiagnosticReport> diagnosticReports,
+            Map<String, Patient> patientReferences,
+            Map<String, Encounter> encounterReferences,
+            Map<String, Observation> observationReferences) {
+        List<Resource> resources = diagnosticReports.stream()
+                .map(diagnosticReport -> {
+                    Patient patient = patientReferences.get(diagnosticReport.getSubject().getReference());
+                    Encounter encounter = encounterReferences.get(diagnosticReport.getEncounter().getReference());
+                    if (!(patient == null || encounter == null)) {
+                        diagnosticReport.setSubject(new Reference()
+                                .setReference("Patient/" + patient.getIdElement().getIdPart())
+                                .setDisplay(patient.getNameFirstRep().getNameAsSingleString()));
+                        diagnosticReport.setEncounter(new Reference()
+                                .setReference("Encounter/" + encounter.getIdElement().getIdPart()));
+
+                        diagnosticReport.getResult()
+                                .forEach(reference -> {
+                                    Observation observation = observationReferences.get(reference.getReference());
+                                    if (observation != null) {
+                                        reference.setReference("Observation/" + observation.getIdElement().getIdPart());
+                                    }
+                                });
+                    }
+
+                    System.out.println(JsonResourceConverterR4.resourceToJson(diagnosticReport));
+                    return (Resource) diagnosticReport;
+                })
+                .collect(Collectors.toList());
+
+        return addResources(resources, "DiagnosticReport");
     }
 
     public Bundle addObservations(Path tsvFile) {
@@ -148,7 +219,7 @@ public class BrainAiResourceClient extends AbstractResourceClient {
 
             Patient patient = patientReferences.get(observation.getSubject().getReference());
             if (patient == null) {
-                Resource resource = findPatient(observation.getSubject()).getEntryFirstRep().getResource();
+                Resource resource = findPatientBySubject(observation.getSubject()).getEntryFirstRep().getResource();
                 if (resource != null) {
                     patient = (Patient) resource;
                     patientReferences.put(observation.getSubject().getReference(), patient);
@@ -156,7 +227,7 @@ public class BrainAiResourceClient extends AbstractResourceClient {
             }
             Encounter encounter = encounterReferences.get(observation.getEncounter().getReference());
             if (encounter == null) {
-                Resource resource = findEncounter(observation.getEncounter()).getEntryFirstRep().getResource();
+                Resource resource = findEncounterBySubject(observation.getEncounter()).getEntryFirstRep().getResource();
                 if (resource != null) {
                     encounter = (Encounter) resource;
                     encounterReferences.put(observation.getEncounter().getReference(), encounter);
@@ -184,7 +255,7 @@ public class BrainAiResourceClient extends AbstractResourceClient {
 
             Patient patient = patientReferences.get(encounter.getSubject().getReference());
             if (patient == null) {
-                Resource resource = findPatient(encounter.getSubject()).getEntryFirstRep().getResource();
+                Resource resource = findPatientBySubject(encounter.getSubject()).getEntryFirstRep().getResource();
                 if (resource != null) {
                     patient = (Patient) resource;
                     patientReferences.put(encounter.getSubject().getReference(), patient);
@@ -263,6 +334,44 @@ public class BrainAiResourceClient extends AbstractResourceClient {
         addResources(resources, "Patient");
     }
 
+    private Map<String, Observation> fetchObservationEncounterFromDiagnosticReports(List<DiagnosticReport> diagnosticReports) {
+        Map<String, Observation> references = new HashMap<>();
+
+        diagnosticReports.stream()
+                .map(diagnosticReport -> diagnosticReport.getResult())
+                .forEach(results -> {
+                    results.forEach(reference -> {
+                        String key = reference.getReference();
+                        if (!references.containsKey(key)) {
+                            Resource resource = findObservationByObservationReference(reference).getEntryFirstRep().getResource();
+                            if (resource != null) {
+                                references.put(key, (Observation) resource);
+                            }
+                        }
+                    });
+                });
+
+        return references;
+    }
+
+    private Map<String, Encounter> fetchEncountersFromDiagnosticReports(List<DiagnosticReport> diagnosticReports) {
+        Map<String, Encounter> references = new HashMap<>();
+
+        diagnosticReports.stream()
+                .map(diagnosticReport -> diagnosticReport.getEncounter())
+                .forEach(reference -> {
+                    String key = reference.getReference();
+                    if (!references.containsKey(key)) {
+                        Resource resource = findEncounterByEncounterReference(reference).getEntryFirstRep().getResource();
+                        if (resource != null) {
+                            references.put(key, (Encounter) resource);
+                        }
+                    }
+                });
+
+        return references;
+    }
+
     private Map<String, Encounter> fetchEncountersFromObservations(List<Observation> observations) {
         Map<String, Encounter> references = new HashMap<>();
 
@@ -271,9 +380,27 @@ public class BrainAiResourceClient extends AbstractResourceClient {
                 .forEach(subject -> {
                     String reference = subject.getReference();
                     if (!references.containsKey(reference)) {
-                        Resource resource = findEncounter(subject).getEntryFirstRep().getResource();
+                        Resource resource = findEncounterBySubject(subject).getEntryFirstRep().getResource();
                         if (resource != null) {
                             references.put(reference, (Encounter) resource);
+                        }
+                    }
+                });
+
+        return references;
+    }
+
+    private Map<String, Patient> fetchPatientsFromDiagnosticReports(List<DiagnosticReport> diagnosticReports) {
+        Map<String, Patient> references = new HashMap<>();
+
+        diagnosticReports.stream()
+                .map(diagnosticReport -> diagnosticReport.getSubject())
+                .forEach(subject -> {
+                    String reference = subject.getReference();
+                    if (!references.containsKey(reference)) {
+                        Resource resource = findPatientBySubject(subject).getEntryFirstRep().getResource();
+                        if (resource != null) {
+                            references.put(reference, (Patient) resource);
                         }
                     }
                 });
@@ -289,7 +416,7 @@ public class BrainAiResourceClient extends AbstractResourceClient {
                 .forEach(subject -> {
                     String reference = subject.getReference();
                     if (!references.containsKey(reference)) {
-                        Resource resource = findPatient(subject).getEntryFirstRep().getResource();
+                        Resource resource = findPatientBySubject(subject).getEntryFirstRep().getResource();
                         if (resource != null) {
                             references.put(reference, (Patient) resource);
                         }
@@ -307,7 +434,7 @@ public class BrainAiResourceClient extends AbstractResourceClient {
                 .forEach(subject -> {
                     String reference = subject.getReference();
                     if (!references.containsKey(reference)) {
-                        Resource resource = findPatient(subject).getEntryFirstRep().getResource();
+                        Resource resource = findPatientBySubject(subject).getEntryFirstRep().getResource();
                         if (resource != null) {
                             references.put(reference, (Patient) resource);
                         }
@@ -317,7 +444,17 @@ public class BrainAiResourceClient extends AbstractResourceClient {
         return references;
     }
 
-    public Bundle findEncounter(Reference subject) {
+    public Bundle findObservationByObservationReference(Reference reference) {
+        return client
+                .search()
+                .forResource(Observation.class)
+                .where(Observation.IDENTIFIER.exactly().systemAndValues("https://fhir.cerner.com/ceuuid", reference.getReference()))
+                .returnBundle(Bundle.class)
+                .cacheControl(new CacheControlDirective().setNoCache(true))
+                .execute();
+    }
+
+    public Bundle findEncounterBySubject(Reference subject) {
         return client
                 .search()
                 .forResource(Encounter.class)
@@ -327,7 +464,17 @@ public class BrainAiResourceClient extends AbstractResourceClient {
                 .execute();
     }
 
-    public Bundle findPatient(Reference subject) {
+    public Bundle findEncounterByEncounterReference(Reference encounter) {
+        return client
+                .search()
+                .forResource(Encounter.class)
+                .where(Encounter.IDENTIFIER.exactly().systemAndValues("urn:oid:2.16.840.1.113883.3.552", encounter.getReference()))
+                .returnBundle(Bundle.class)
+                .cacheControl(new CacheControlDirective().setNoCache(true))
+                .execute();
+    }
+
+    public Bundle findPatientBySubject(Reference subject) {
         return client
                 .search()
                 .forResource(Patient.class)

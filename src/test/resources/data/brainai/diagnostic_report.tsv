@@ -1,0 +1,16 @@
+issue_dt_tm	effective_dt_tm	PERSON_ID	ENCNTR_ID	OBSERV_ID	observ_display	category_code	category_display	code_code	code_display
+01/22/2011 09:24:28 AM	01/22/2011 09:24:28 AM	1	enc1	obs6	Total Cholesterol	LAB	Laboratory	57698-3	Lipid Panel
+01/22/2011 09:24:28 AM	01/22/2011 09:24:28 AM	1	enc1	obs7	Triglycerides	LAB	Laboratory	57698-3	Lipid Panel
+01/22/2011 09:24:28 AM	01/22/2011 09:24:28 AM	1	enc1	obs8	Low Density Lipoprotein Cholesterol	LAB	Laboratory	57698-3	Lipid Panel
+01/22/2011 09:24:28 AM	01/22/2011 09:24:28 AM	1	enc1	obs9	High Density Lipoprotein Cholesterol	LAB	Laboratory	57698-3	Lipid Panel
+01/22/2011 09:24:28 AM	01/22/2011 09:24:28 AM	1	enc1	obs10	Leukocytes [#/volume] in Blood by Automated count	LAB	Laboratory	58410-2	Complete blood count (hemogram) panel - Blood by Automated count
+05/19/2010 09:08:52 AM	05/19/2010 09:08:52 AM	2	enc10	obs16	Leukocytes [#/volume] in Blood by Automated count	LAB	Laboratory	58410-2	Complete blood count (hemogram) panel - Blood by Automated count
+05/19/2010 09:08:52 AM	05/19/2010 09:08:52 AM	2	enc10	obs17	Erythrocytes [#/volume] in Blood by Automated count	LAB	Laboratory	58410-2	Complete blood count (hemogram) panel - Blood by Automated count
+05/19/2010 09:08:52 AM	05/19/2010 09:08:52 AM	2	enc10	obs18	Hemoglobin [Mass/volume] in Blood	LAB	Laboratory	58410-2	Complete blood count (hemogram) panel - Blood by Automated count
+05/19/2010 09:08:52 AM	05/19/2010 09:08:52 AM	2	enc10	obs19	Hematocrit [Volume Fraction] of Blood by Automated count	LAB	Laboratory	58410-2	Complete blood count (hemogram) panel - Blood by Automated count
+05/19/2010 09:08:52 AM	05/19/2010 09:08:52 AM	2	enc10	obs20	MCV [Entitic volume] by Automated count	LAB	Laboratory	58410-2	Complete blood count (hemogram) panel - Blood by Automated count
+03/01/2010 04:22:41 AM	03/01/2010 04:22:41 AM	5	enc40	obs46	Glucose	LAB	Laboratory	51990-0	Basic Metabolic Panel
+03/01/2010 04:22:41 AM	03/01/2010 04:22:41 AM	5	enc40	obs47	Urea Nitrogen	LAB	Laboratory	51990-0	Basic Metabolic Panel
+03/01/2010 04:22:41 AM	03/01/2010 04:22:41 AM	5	enc40	obs48	Creatinine	LAB	Laboratory	51990-0	Basic Metabolic Panel
+03/01/2010 04:22:41 AM	03/01/2010 04:22:41 AM	5	enc40	obs49	Calcium	LAB	Laboratory	51990-0	Basic Metabolic Panel
+03/01/2010 04:22:41 AM	03/01/2010 04:22:41 AM	5	enc40	obs50	Sodium	LAB	Laboratory	51990-0	Basic Metabolic Panel

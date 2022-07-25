@@ -1,2 +1,51 @@
-event_end_dt_tm	PERSON_ID	ENCNTR_ID	loinc_code	loinc_description	result_val	result_units_cd	Clinical Event Result Type	category.code
-02/12/2020 04:28:00 AM 	1	enc1	2160-0	Creatinine	1.39	mg/dL	numeric	laboratory
+OBSERV_ID	event_end_dt_tm	PERSON_ID	ENCNTR_ID	loinc_code	loinc_description	result_val	result_units_cd	Clinical Event Result Type	category.code
+obs1	01/22/2011 09:24:28 AM	1	enc1	8302-2	Body Height	159.54466164663938	cm	numeric	laboratory
+obs2	01/22/2011 09:24:28 AM	1	enc1	72514-3	Pain severity - 0-10 verbal numeric rating [Score] - Reported	0.8955031214537685	{score}	numeric	laboratory
+obs3	01/22/2011 09:24:28 AM	1	enc1	29463-7	Body Weight	67.21030124304083	kg	numeric	laboratory
+obs4	01/22/2011 09:24:28 AM	1	enc1	39156-5	Body Mass Index	26.404095042205697	kg/m2	numeric	laboratory
+obs5	01/22/2011 09:24:28 AM	1	enc1	55284-4	Blood Pressure				laboratory
+obs6	01/22/2011 09:24:28 AM	1	enc1	2093-3	Total Cholesterol	173.7967790756776	mg/dL	numeric	laboratory
+obs7	01/22/2011 09:24:28 AM	1	enc1	2571-8	Triglycerides	125.12777370736961	mg/dL	numeric	laboratory
+obs8	01/22/2011 09:24:28 AM	1	enc1	18262-6	Low Density Lipoprotein Cholesterol	70.18897710773263	mg/dL	numeric	laboratory
+obs9	01/22/2011 09:24:28 AM	1	enc1	2085-9	High Density Lipoprotein Cholesterol	78.58224722647104	mg/dL	numeric	laboratory
+obs10	01/22/2011 09:24:28 AM	1	enc1	6690-2	Leukocytes [#/volume] in Blood by Automated count	4.961941377289904	10*3/uL	numeric	laboratory
+obs11	05/19/2010 09:08:52 AM	2	enc10	8302-2	Body Height	184.09715388814064	cm	numeric	laboratory
+obs12	05/19/2010 09:08:52 AM	2	enc10	72514-3	Pain severity - 0-10 verbal numeric rating [Score] - Reported	1.618968805608501	{score}	numeric	laboratory
+obs13	05/19/2010 09:08:52 AM	2	enc10	29463-7	Body Weight	95.99052761017086	kg	numeric	laboratory
+obs14	05/19/2010 09:08:52 AM	2	enc10	39156-5	Body Mass Index	28.322672457313647	kg/m2	numeric	laboratory
+obs15	05/19/2010 09:08:52 AM	2	enc10	55284-4	Blood Pressure				laboratory
+obs16	05/19/2010 09:08:52 AM	2	enc10	6690-2	Leukocytes [#/volume] in Blood by Automated count	10.061784054824821	10*3/uL	numeric	laboratory
+obs17	05/19/2010 09:08:52 AM	2	enc10	789-8	Erythrocytes [#/volume] in Blood by Automated count	3.9012784962113325	10*6/uL	numeric	laboratory
+obs18	05/19/2010 09:08:52 AM	2	enc10	718-7	Hemoglobin [Mass/volume] in Blood	12.78354868826867	g/dL	numeric	laboratory
+obs19	05/19/2010 09:08:52 AM	2	enc10	4544-3	Hematocrit [Volume Fraction] of Blood by Automated count	44.55593557887073	%	numeric	laboratory
+obs20	05/19/2010 09:08:52 AM	2	enc10	787-2	MCV [Entitic volume] by Automated count	84.1397188366265	fL	numeric	laboratory
+obs21	10/06/2009 06:38:12 AM	3	enc17	8302-2	Body Height	103.7159272521772	cm	numeric	laboratory
+obs22	10/06/2009 06:38:12 AM	3	enc17	72514-3	Pain severity - 0-10 verbal numeric rating [Score] - Reported	2.5448957892792583	{score}	numeric	laboratory
+obs23	10/06/2009 06:38:12 AM	3	enc17	29463-7	Body Weight	15.911358270469337	kg	numeric	laboratory
+obs24	10/06/2009 06:38:12 AM	3	enc17	77606-2	Weight-for-length Per age and sex	32.70457967687658	%	numeric	laboratory
+obs25	10/06/2009 06:38:12 AM	3	enc17	39156-5	Body Mass Index	14.791640594717785	kg/m2	numeric	laboratory
+obs26	10/06/2009 06:38:12 AM	3	enc17	59576-9	Body mass index (BMI) [Percentile] Per age and gender	16.092142415828835	%	numeric	laboratory
+obs27	10/06/2009 06:38:12 AM	3	enc17	55284-4	Blood Pressure				laboratory
+obs28	10/06/2009 06:38:12 AM	3	enc17	72166-2	Tobacco smoking status NHIS				laboratory
+obs29	04/06/2010 06:38:12 AM	3	enc18	8302-2	Body Height	107.43039432339219	cm	numeric	laboratory
+obs30	04/06/2010 06:38:12 AM	3	enc18	72514-3	Pain severity - 0-10 verbal numeric rating [Score] - Reported	1.917975479503653	{score}	numeric	laboratory
+obs31	01/30/2010 01:12:31 AM	4	enc27	8302-2	Body Height	102.26181815290953	cm	numeric	laboratory
+obs32	01/30/2010 01:12:31 AM	4	enc27	72514-3	Pain severity - 0-10 verbal numeric rating [Score] - Reported	1.9154180502847136	{score}	numeric	laboratory
+obs33	01/30/2010 01:12:31 AM	4	enc27	29463-7	Body Weight	15.982303124393203	kg	numeric	laboratory
+obs34	01/30/2010 01:12:31 AM	4	enc27	77606-2	Weight-for-length Per age and sex	44.21571933831387	%	numeric	laboratory
+obs35	01/30/2010 01:12:31 AM	4	enc27	39156-5	Body Mass Index	15.28313127254599	kg/m2	numeric	laboratory
+obs36	01/30/2010 01:12:31 AM	4	enc27	59576-9	Body mass index (BMI) [Percentile] Per age and gender	48.71478104009034	%	numeric	laboratory
+obs37	01/30/2010 01:12:31 AM	4	enc27	55284-4	Blood Pressure				laboratory
+obs38	01/30/2010 01:12:31 AM	4	enc27	72166-2	Tobacco smoking status NHIS				laboratory
+obs39	02/05/2011 01:12:31 AM	4	enc29	8302-2	Body Height	109.33976458585698	cm	numeric	laboratory
+obs40	02/05/2011 01:12:31 AM	4	enc29	72514-3	Pain severity - 0-10 verbal numeric rating [Score] - Reported	1.657263682355159	{score}	numeric	laboratory
+obs41	03/01/2010 04:22:41 AM	5	enc40	8302-2	Body Height	173.9018914060253	cm	numeric	laboratory
+obs42	03/01/2010 04:22:41 AM	5	enc40	72514-3	Pain severity - 0-10 verbal numeric rating [Score] - Reported	1.1844131388662626	{score}	numeric	laboratory
+obs43	03/01/2010 04:22:41 AM	5	enc40	29463-7	Body Weight	84.16772963190675	kg	numeric	laboratory
+obs44	03/01/2010 04:22:41 AM	5	enc40	39156-5	Body Mass Index	27.831524855627176	kg/m2	numeric	laboratory
+obs45	03/01/2010 04:22:41 AM	5	enc40	55284-4	Blood Pressure				laboratory
+obs46	03/01/2010 04:22:41 AM	5	enc40	2339-0	Glucose	87.84435224199666	mg/dL	numeric	laboratory
+obs47	03/01/2010 04:22:41 AM	5	enc40	6299-2	Urea Nitrogen	18.23111623319953	mg/dL	numeric	laboratory
+obs48	03/01/2010 04:22:41 AM	5	enc40	38483-4	Creatinine	1.1385306360137668	mg/dL	numeric	laboratory
+obs49	03/01/2010 04:22:41 AM	5	enc40	49765-1	Calcium	9.57094827230436	mg/dL	numeric	laboratory
+obs50	03/01/2010 04:22:41 AM	5	enc40	2947-0	Sodium	136.23512237139718	mmol/L	numeric	laboratory
